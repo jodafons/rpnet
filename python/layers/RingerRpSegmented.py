@@ -1,5 +1,5 @@
 
-__all__ = ['RingerRp']
+__all__ = ['RingerRpSegmented']
 
 
 from tensorflow.keras.layers import Layer
@@ -17,12 +17,12 @@ HAD2    = np.arange(1,5)
 HAD3    = np.arange(1,5)
 
 
-class RingerRp(Layer):
+class RingerRpSegmented(Layer):
 
 
 
   def __init__(self, alpha=None, beta=None, **kwargs):
-    super(RingerRp, self).__init__(**kwargs)
+    super(RingerRpSegmented, self).__init__(**kwargs)
     self.output_dim = (100,)
 
   def build( self, input_shape ):
@@ -37,7 +37,7 @@ class RingerRp(Layer):
                                   trainable=True)
 
     self.rvec = K.constant(np.concatenate((PS,EM1,EM2,EM3,HAD1,HAD2,HAD3)))
-    super(RingerRp, self).build(input_shape)
+    super(RingerRpSegmented, self).build(input_shape)
 
 
 
@@ -45,6 +45,11 @@ class RingerRp(Layer):
 
 
   def call(self, input):
+
+    # build the alpha
+    alpha = K.constant(np.concatenate((PS*self.alpha.eval()[0][0],EM1,EM2,EM3,HAD1,HAD2,HAD3)))
+
+
 
     Ea = K.sign(input)*K.pow( K.abs(input), self.alpha )
     rb =  K.pow(self.rvec, self.beta)

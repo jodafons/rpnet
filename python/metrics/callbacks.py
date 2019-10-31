@@ -1,5 +1,5 @@
 
-__all__ = ["sp"]
+__all__ = ["sp", "monit"]
 
 from tensorflow.keras.callbacks import Callback
 from sklearn.metrics import roc_curve
@@ -70,6 +70,31 @@ class sp(Callback):
       except:
         print( "Its not possible to set the weights. Maybe there is some" +
             "problem with the train split (check the quantity and kfold method.)")
+
+
+
+
+
+
+
+class monit(Callback):
+
+  def __init__(self, **kw):
+    super(Callback, self).__init__()
+    self.__weights = list()
+
+
+
+  def on_epoch_end(self, epoch, logs={}):
+    self.__weights.append(self.model.get_weights())
+
+
+  def getWeights(self):
+    return self.__weights
+
+
+
+
 
 
 

@@ -1,7 +1,9 @@
 
 
+
 # import rp layer and sp metrics
-from rpnet import sp, RingerRp
+from rpnet import sp, monit
+from rpnet.layers.RingerRpSegmented import RingerRpSegmented
 
 # import tensorflow/keras wrapper
 from tensorflow.keras.models import Sequential
@@ -20,12 +22,8 @@ from sklearn.utils.class_weight import compute_class_weight
 # rpnet utilites
 from rpnet import get_output_from
 
-
-def norm1( data ):
-	norms = np.abs( data.sum(axis=1) )
-	norms[norms==0] = 1
-	return data/norms[:,None]
-
+# matplot lib for plots
+import matplotlib.pyplot as plt
 
 
 
@@ -33,7 +31,6 @@ def norm1( data ):
 file = '../data/data17_13TeV.AllPeriods.sgn.probes_lhmedium_EGAM1.bkg.VProbes_EGAM7.GRL_V97_et0_eta0.slim.npz'
 raw_data = dict(np.load(file))
 data = raw_data['data'][:,1:101]
-data = norm1(data)
 target = raw_data['target']
 del raw_data
 
@@ -53,27 +50,33 @@ y_val = target [ splits[0][1] ]
 
 
 
-kernel_size=3
+# create the model
 model = Sequential()
-model.add(Dense(5, input_shape=(100,) ,activation='tanh', kernel_initializer='random_uniform', bias_initializer='random_uniform'))
-model.add(Dense(1, activation='linear', kernel_initializer='random_uniform', bias_initializer='random_uniform'))
-model.add(Activation('tanh'))
+model.add(RingerRpSegmented(  input_shape=(100,), name='RingerRp') )
+#model.add(Dense(5, input_shape=(100,), activation='tanh', kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Dense'))
+model.add(Dense(10, activation='tanh'  , kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Hidden' ))
+#model.add(Dropout(0.25))
+model.add(Dense(1, activation='linear', kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Output'))
+model.add(Activation('sigmoid',name='Activation'))
 
 
 
 
+
+# create the optimizer
+#optimizer = LRMultiplier('adam', {'Hidden': 1, 'Output': 1, 'RingerRp':2}, name='Adam' ),
 optimizer='adam'
 
 # compile the model
 model.compile( optimizer,
-               loss = 'mse',
+               loss = 'binary_crossentropy',
                metrics = ['acc'],
               )
 
 
 sp_obj = sp(patience=25, verbose=True, save_the_best=True)
 sp_obj.set_validation_data( (x_val, y_val) )
-
+monit = monit()
 
 # train the model
 history = model.fit(x, y,
@@ -87,8 +90,16 @@ history = model.fit(x, y,
 
 
 
-
-
+#weights = monit.getWeights()
+#from pprint import pprint
+#alphas = []; betas = []
+#for w in weights:
+#  alphas.append( w[0][0] ); betas.append(w[1][0])
+## plot all alphas and betas along the training
+#plt.scatter(alphas, betas )
+#plt.xlabel('alphas')
+#plt.ylabel('betas')
+#plt.savefig('alphas_and_betas.pdf')
 
 
 # The network output
