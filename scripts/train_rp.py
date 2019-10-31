@@ -50,9 +50,10 @@ y_val = target [ splits[0][1] ]
 model = Sequential()
 model.add(RingerRp(  input_shape=(100,), name='RingerRp') )
 #model.add(Dense(5, input_shape=(100,), activation='tanh', kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Dense'))
-model.add(Dense(5, activation='tanh'  , kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Hidden' ))
+model.add(Dense(32, activation='tanh'  , kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Hidden' ))
+model.add(Dropout(0.25))
 model.add(Dense(1, activation='linear', kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Output'))
-model.add(Activation('tanh',name='Activation'))
+model.add(Activation('sigmoid',name='Activation'))
 
 
 
@@ -64,7 +65,7 @@ optimizer='adam'
 
 # compile the model
 model.compile( optimizer,
-               loss = 'mse',
+               loss = 'binary_crossentropy',
                metrics = ['acc'],
               )
 
