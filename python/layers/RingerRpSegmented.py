@@ -27,12 +27,12 @@ class RingerRpSegmented(Layer):
 
   def build( self, input_shape ):
     self.alpha = self.add_weight( name='alpha',
-                               shape=(1,1),
+                               shape=(1,7),
                                initializer=tf.keras.initializers.RandomNormal(mean=2, stddev=0.5),
                                trainable=True)
 
     self.beta = self.add_weight(name='beta',
-                                  shape=(1,1),
+                                  shape=(1,7),
                                   initializer=tf.keras.initializers.RandomNormal(mean=4, stddev=0.5),
                                   trainable=True)
 
@@ -47,12 +47,34 @@ class RingerRpSegmented(Layer):
   def call(self, input):
 
     # build the alpha
-    alpha = K.constant(np.concatenate((PS*self.alpha.eval()[0][0],EM1,EM2,EM3,HAD1,HAD2,HAD3)))
+    alpha = K.constant(np.concatenate((
+                                        [K.eval(self.alpha)[0][0]] * 8,
+                                        [K.eval(self.alpha)[0][1]] * 64,
+                                        [K.eval(self.alpha)[0][2]] * 8,
+                                        [K.eval(self.alpha)[0][3]] * 8,
+                                        [K.eval(self.alpha)[0][4]] * 4,
+                                        [K.eval(self.alpha)[0][5]] * 4,
+                                        [K.eval(self.alpha)[0][6]] * 4,
+                                        )
+                                        ).reshape((1,100))
+                                        )
+
+    beta = K.constant(np.concatenate((
+                                        [K.eval(self.beta)[0][0]] * 8,
+                                        [K.eval(self.beta)[0][1]] * 64,
+                                        [K.eval(self.beta)[0][2]] * 8,
+                                        [K.eval(self.beta)[0][3]] * 8,
+                                        [K.eval(self.beta)[0][4]] * 4,
+                                        [K.eval(self.beta)[0][5]] * 4,
+                                        [K.eval(self.beta)[0][6]] * 4,
+                                        )
+                                        ).reshape((1,100))
+                                        )
 
 
 
-    Ea = K.sign(input)*K.pow( K.abs(input), self.alpha )
-    rb =  K.pow(self.rvec, self.beta)
+    Ea = K.sign(input)*K.pow( K.abs(input), alpha )
+    rb =  K.pow(self.rvec, beta)
     Ea_sum = tf.reshape( K.sum( Ea, axis=1), (-1,1))
     out = (Ea*rb)/ Ea_sum
     return out

@@ -1,12 +1,25 @@
 
 
+try:
+  from tensorflow.compat.v1 import ConfigProto
+  from tensorflow.compat.v1 import InteractiveSession
+
+  config = ConfigProto()
+  config.gpu_options.allow_growth = True
+  session = InteractiveSession(config=config)
+except Exception as e:
+  print(e)
+  print("Not possible to set gpu allow growth")
+
+
+
 
 # import rp layer and sp metrics
 from rpnet import sp, monit, RingerRp
 
 # import tensorflow/keras wrapper
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Conv1D, Flatten
+from tensorflow.keras.layers import Reshape, Dense, Dropout, Activation, Conv1D, Flatten
 
 # importkeras learning rate multipler. This will be used to apply different learning rates
 # for each layer.
@@ -52,9 +65,11 @@ y_val = target [ splits[0][1] ]
 # create the model
 model = Sequential()
 model.add(RingerRp(  input_shape=(100,), name='RingerRp') )
-#model.add(Dense(5, input_shape=(100,), activation='tanh', kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Dense'))
-model.add(Dense(10, activation='tanh'  , kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Hidden' ))
-#model.add(Dropout(0.25))
+model.add(Reshape((100,1)))
+model.add(Conv1D(16, kernel_size=3, activation='relu'))
+model.add(Flatten())
+model.add(Dense(5, activation='relu', kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Output2'))
+model.add(Dropout(0.25))
 model.add(Dense(1, activation='linear', kernel_initializer='random_uniform', bias_initializer='random_uniform', name='Output'))
 model.add(Activation('sigmoid',name='Activation'))
 
@@ -63,7 +78,7 @@ model.add(Activation('sigmoid',name='Activation'))
 
 
 # create the optimizer
-#optimizer = LRMultiplier('adam', {'Hidden': 1, 'Output': 1, 'RingerRp':2}, name='Adam' ),
+#optimizer = LRMultiplier('adam', {'Hidden': 1, 'Output': 1, 'RingerRp':2}  )
 optimizer='adam'
 
 # compile the model
@@ -76,6 +91,9 @@ model.compile( optimizer,
 sp_obj = sp(patience=25, verbose=True, save_the_best=True)
 sp_obj.set_validation_data( (x_val, y_val) )
 monit = monit()
+
+
+
 
 # train the model
 history = model.fit(x, y,

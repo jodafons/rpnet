@@ -1,7 +1,19 @@
 
 
+try:
+  from tensorflow.compat.v1 import ConfigProto
+  from tensorflow.compat.v1 import InteractiveSession
+
+  config = ConfigProto()
+  config.gpu_options.allow_growth = True
+  session = InteractiveSession(config=config)
+except Exception as e:
+  print(e)
+  print("Not possible to set gpu allow growth")
+
+
 # import rp layer and sp metrics
-from rpnet import sp, RingerRp
+from rpnet import RingerRp, sp
 
 # import tensorflow/keras wrapper
 from tensorflow.keras.models import Sequential
@@ -22,9 +34,9 @@ from rpnet import get_output_from
 
 
 def norm1( data ):
-	norms = np.abs( data.sum(axis=1) )
-	norms[norms==0] = 1
-	return data/norms[:,None]
+  norms = np.abs( data.sum(axis=1) )
+  norms[norms==0] = 1
+  return data/norms[:,None]
 
 
 
@@ -66,7 +78,7 @@ optimizer='adam'
 
 # compile the model
 model.compile( optimizer,
-               loss = 'mse',
+               loss ='mse',
                metrics = ['acc'],
               )
 
@@ -90,10 +102,6 @@ history = model.fit(x, y,
 
 
 
-
-# The network output
-#output = get_output_from( model, 'Activation', x )
-#output = get_output_from( model, 'RingerRp', x )
 
 
 

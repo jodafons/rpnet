@@ -66,14 +66,16 @@ y_val = target [ splits[0][1] ]
 
 
 
-kernel_size=3
+kernel_size=5
 model = Sequential()
 model.add(Conv1D(16, kernel_size=kernel_size, activation='relu', input_shape=(100,1) ))
 model.add(Conv1D(32, kernel_size=kernel_size, activation='relu' ))
-model.add(Dropout(0.25))
+#model.add(Dropout(0.25))
 model.add(Flatten())
-model.add(Dense(64,  activation='relu', kernel_initializer='random_uniform', bias_initializer='random_uniform'))
-model.add(Dropout(0.25))
+#model.add(Dense(64,  activation='relu', kernel_initializer='random_uniform', bias_initializer='random_uniform'))
+#model.add(Dropout(0.25))
+model.add(Dense(5,  activation='relu', kernel_initializer='random_uniform', bias_initializer='random_uniform'))
+#model.add(Dropout(0.25))
 model.add(Dense(1, activation='linear', kernel_initializer='random_uniform', bias_initializer='random_uniform'))
 model.add(Activation('sigmoid'))
 
